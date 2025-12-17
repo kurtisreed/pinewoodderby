@@ -513,8 +513,9 @@ h3 {
 
 .championship-container h2 {
     color: white;
-    margin-bottom: 20px;
+    margin-bottom: 15px;
     flex-shrink: 0;
+    font-size: 1.8rem;
 }
 
 .bracket-container {
@@ -522,7 +523,7 @@ h3 {
     justify-content: space-between;
     align-items: center;
     gap: 60px;
-    padding: 40px;
+    padding: 25px 40px;
     background: white;
     border-radius: 15px;
     box-shadow: 0 10px 30px rgba(0, 0, 0, 0.2);
@@ -540,8 +541,8 @@ h3 {
 
 .bracket-round h3 {
     color: #667eea;
-    margin-bottom: 25px;
-    font-size: 1.4rem;
+    margin-bottom: 15px;
+    font-size: 1.2rem;
     text-align: center;
     font-weight: bold;
 }
@@ -549,24 +550,24 @@ h3 {
 .bracket-matchups {
     display: flex;
     flex-direction: column;
-    gap: 50px;
+    gap: 30px;
     width: 100%;
 }
 
 .bracket-matchup {
     background: #f8f9fa;
-    border-radius: 12px;
-    padding: 20px;
+    border-radius: 10px;
+    padding: 12px;
     box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
     min-width: 200px;
 }
 
 .bracket-racer {
-    padding: 18px 20px;
-    margin: 8px 0;
-    border-radius: 10px;
+    padding: 12px 15px;
+    margin: 5px 0;
+    border-radius: 8px;
     font-weight: bold;
-    font-size: 1.1rem;
+    font-size: 1rem;
     color: white;
     cursor: pointer;
     transition: all 0.3s ease;
@@ -594,15 +595,15 @@ h3 {
 
 .champion-display {
     text-align: center;
-    padding: 50px 40px;
+    padding: 30px 40px;
     background: linear-gradient(135deg, #ffd700 0%, #ffaa00 100%);
-    border-radius: 20px;
+    border-radius: 15px;
     color: white;
-    font-size: 2.5rem;
+    font-size: 2rem;
     font-weight: bold;
     box-shadow: 0 8px 20px rgba(255, 215, 0, 0.4);
     animation: championPulse 2s infinite;
-    min-width: 300px;
+    min-width: 250px;
 }
 
 @keyframes championPulse {
