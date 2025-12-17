@@ -32,6 +32,14 @@ function loadState() {
         if (saved) {
             const loaded = JSON.parse(saved);
             state.contestants = loaded.contestants || [];
+
+            // Ensure all contestants have finishes property for backwards compatibility
+            state.contestants.forEach(c => {
+                if (!c.finishes) {
+                    c.finishes = { first: 0, second: 0, third: 0 };
+                }
+            });
+
             state.heats = loaded.heats || [];
             state.currentHeatIndex = loaded.currentHeatIndex || 0;
             state.results = loaded.results || [];
@@ -130,7 +138,8 @@ function addContestant(e) {
         quorum: quorum,
         score: 0,
         races: 0,
-        trackSlots: { 1: 0, 2: 0, 3: 0 }
+        trackSlots: { 1: 0, 2: 0, 3: 0 },
+        finishes: { first: 0, second: 0, third: 0 }
     };
 
     state.contestants.push(contestant);
@@ -161,7 +170,8 @@ function loadTestData() {
                 quorum: quorum,
                 score: 0,
                 races: 0,
-                trackSlots: { 1: 0, 2: 0, 3: 0 }
+                trackSlots: { 1: 0, 2: 0, 3: 0 },
+                finishes: { first: 0, second: 0, third: 0 }
             };
 
             state.contestants.push(contestant);
@@ -462,9 +472,18 @@ function recordResults(first, second, third) {
     const secondContestant = state.contestants.find(c => c.id === heat.slots[second].id);
     const thirdContestant = state.contestants.find(c => c.id === heat.slots[third].id);
 
-    if (firstContestant) firstContestant.score += 3;
-    if (secondContestant) secondContestant.score += 2;
-    if (thirdContestant) thirdContestant.score += 1;
+    if (firstContestant) {
+        firstContestant.score += 3;
+        firstContestant.finishes.first++;
+    }
+    if (secondContestant) {
+        secondContestant.score += 2;
+        secondContestant.finishes.second++;
+    }
+    if (thirdContestant) {
+        thirdContestant.score += 1;
+        thirdContestant.finishes.third++;
+    }
 
     heat.completed = true;
     heat.results = { first, second, third };
@@ -521,31 +540,42 @@ function updateLeaderboards() {
         currentQuorum = currentHeat.quorum;
     }
 
-    // Calculate who would advance to championship (top 8)
-    const advancingIds = new Set();
+    // Calculate top 2 from each quorum (these get gold borders)
+    const top2Ids = new Set();
 
     // Get top 2 from each quorum
     const quorums = ['deacon', 'teacher', 'priest'];
     quorums.forEach(quorum => {
         const top2 = state.contestants
             .filter(c => c.quorum === quorum)
-            .sort((a, b) => b.score - a.score)
+            .sort((a, b) => {
+                // Primary sort: by score
+                if (b.score !== a.score) return b.score - a.score;
+
+                // Tiebreaker 1: by first place finishes
+                if (b.finishes.first !== a.finishes.first) return b.finishes.first - a.finishes.first;
+
+                // Tiebreaker 2: by second place finishes
+                return b.finishes.second - a.finishes.second;
+            })
             .slice(0, 2);
-        top2.forEach(c => advancingIds.add(c.id));
+        top2.forEach(c => top2Ids.add(c.id));
     });
 
-    // Get wild cards (next 2 highest scores not already in finalists)
-    const wildcards = state.contestants
-        .filter(c => !advancingIds.has(c.id))
-        .sort((a, b) => b.score - a.score)
-        .slice(0, 2);
-    wildcards.forEach(c => advancingIds.add(c.id));
-
-    // Render leaderboards in fixed order
-    leaderboardContainer.innerHTML = quorums.map(quorum => {
+    // Render quorum leaderboards
+    const quorumLeaderboards = quorums.map(quorum => {
         const quorumContestants = state.contestants
             .filter(c => c.quorum === quorum)
-            .sort((a, b) => b.score - a.score);
+            .sort((a, b) => {
+                // Primary sort: by score
+                if (b.score !== a.score) return b.score - a.score;
+
+                // Tiebreaker 1: by first place finishes
+                if (b.finishes.first !== a.finishes.first) return b.finishes.first - a.finishes.first;
+
+                // Tiebreaker 2: by second place finishes
+                return b.finishes.second - a.finishes.second;
+            });
 
         const isCurrentlyRacing = quorum === currentQuorum;
 
@@ -554,7 +584,7 @@ function updateLeaderboards() {
             content = '<div class="leaderboard-empty">No racers in this quorum</div>';
         } else {
             content = quorumContestants.map((c, index) => {
-                const advancingClass = advancingIds.has(c.id) ? ' advancing' : '';
+                const advancingClass = (index < 2 && top2Ids.has(c.id)) ? ' advancing' : '';
                 return `
                     <div class="leaderboard-row ${c.quorum}${advancingClass}">
                         <div class="leaderboard-rank">#${index + 1}</div>
@@ -577,6 +607,54 @@ function updateLeaderboards() {
             </div>
         `;
     }).join('');
+
+    // Get top 5 contestants not in top 2 of their quorum, sorted by score with tiebreakers
+    const wildCardContestants = state.contestants
+        .filter(c => !top2Ids.has(c.id))
+        .sort((a, b) => {
+            // Primary sort: by score
+            if (b.score !== a.score) return b.score - a.score;
+
+            // Tiebreaker 1: by first place finishes
+            if (b.finishes.first !== a.finishes.first) return b.finishes.first - a.finishes.first;
+
+            // Tiebreaker 2: by second place finishes
+            return b.finishes.second - a.finishes.second;
+        })
+        .slice(0, 5);
+
+    let wildCardContent;
+    if (wildCardContestants.length === 0) {
+        wildCardContent = '<div class="leaderboard-empty">No contestants</div>';
+    } else {
+        wildCardContent = wildCardContestants.map((c, index) => {
+            const advancingClass = index < 2 ? ' advancing' : '';
+            return `
+                <div class="leaderboard-row ${c.quorum}${advancingClass}">
+                    <div class="leaderboard-rank">#${index + 1}</div>
+                    <div class="leaderboard-name">${c.name}</div>
+                    <div class="leaderboard-score">${c.score} pts</div>
+                </div>
+            `;
+        }).join('');
+    }
+
+    const wildCardLeaderboard = `
+        <div class="quorum-leaderboard">
+            <h3>
+                Wild Card
+                <span class="racing-badge hidden">RACING NOW</span>
+            </h3>
+            <div class="leaderboard-table">
+                ${wildCardContent}
+            </div>
+            <div style="margin-top: 10px; padding: 10px; background: #f8f9fa; border-radius: 8px; font-size: 0.85rem; color: #666; text-align: center;">
+                Ties broken by:<br> # of 1st place finishes<br> # of 2nd place finishes
+            </div>
+        </div>
+    `;
+
+    leaderboardContainer.innerHTML = quorumLeaderboards + wildCardLeaderboard;
 }
 
 // Utility Functions
@@ -619,16 +697,34 @@ function startChampionship() {
     quorums.forEach(quorum => {
         const top2 = state.contestants
             .filter(c => c.quorum === quorum)
-            .sort((a, b) => b.score - a.score)
+            .sort((a, b) => {
+                // Primary sort: by score
+                if (b.score !== a.score) return b.score - a.score;
+
+                // Tiebreaker 1: by first place finishes
+                if (b.finishes.first !== a.finishes.first) return b.finishes.first - a.finishes.first;
+
+                // Tiebreaker 2: by second place finishes
+                return b.finishes.second - a.finishes.second;
+            })
             .slice(0, 2);
         finalists.push(...top2);
     });
 
-    // Get wild cards (next 2 highest scores not already in finalists)
+    // Get wild cards (next 2 highest scores not already in finalists, with tiebreakers)
     const finalistIds = new Set(finalists.map(f => f.id));
     const wildcards = state.contestants
         .filter(c => !finalistIds.has(c.id))
-        .sort((a, b) => b.score - a.score)
+        .sort((a, b) => {
+            // Primary sort: by score
+            if (b.score !== a.score) return b.score - a.score;
+
+            // Tiebreaker 1: by first place finishes
+            if (b.finishes.first !== a.finishes.first) return b.finishes.first - a.finishes.first;
+
+            // Tiebreaker 2: by second place finishes
+            return b.finishes.second - a.finishes.second;
+        })
         .slice(0, 2);
     finalists.push(...wildcards);
 

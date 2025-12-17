@@ -348,7 +348,7 @@ h3 {
 /* Leaderboard */
 #leaderboardContainer {
     display: grid;
-    grid-template-columns: 1fr 1fr 1fr;
+    grid-template-columns: 1fr 1fr 1fr 1fr;
     gap: 20px;
     overflow-y: auto;
     flex: 1;
@@ -608,7 +608,13 @@ h3 {
 }
 
 /* Responsive Design */
-@media (max-width: 1200px) {
+@media (max-width: 1400px) {
+    #leaderboardContainer {
+        grid-template-columns: 1fr 1fr;
+    }
+}
+
+@media (max-width: 900px) {
     #leaderboardContainer {
         grid-template-columns: 1fr;
     }
