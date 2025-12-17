@@ -152,9 +152,8 @@ function loadTestData() {
 
     quorums.forEach(quorum => {
         for (let i = 0; i < 5; i++) {
-            const firstName = firstNames[Math.floor(Math.random() * firstNames.length)];
-            const lastName = lastNames[Math.floor(Math.random() * lastNames.length)];
-            const name = `${firstName} ${lastName}`;
+            const name = firstNames[Math.floor(Math.random() * firstNames.length)];
+
 
             const contestant = {
                 id: Date.now() + Math.random(),
@@ -490,15 +489,18 @@ function recordResults(first, second, third) {
 // Render Upcoming Heats
 function renderUpcomingHeats() {
     const upcoming = state.heats.slice(state.currentHeatIndex + 1);
+    const upcomingHeatsTitle = document.getElementById('upcomingHeatsTitle');
 
     if (upcoming.length === 0) {
         upcomingHeatsDiv.innerHTML = '<p class="no-heats">No more heats.</p>';
+        upcomingHeatsTitle.textContent = 'Upcoming Heats';
         return;
     }
 
+    upcomingHeatsTitle.textContent = `Upcoming Heats (${upcoming.length})`;
+
     upcomingHeatsDiv.innerHTML = upcoming.map(heat => `
         <div class="upcoming-heat">
-            <h4>${capitalizeFirst(heat.quorum)} Quorum - Heat ${heat.heatNumber}</h4>
             <div class="upcoming-racers">
                 <div class="upcoming-racer ${heat.slots[1].quorum}">${heat.slots[1].name}</div>
                 <div class="upcoming-racer ${heat.slots[2].quorum}">${heat.slots[2].name}</div>
@@ -519,8 +521,25 @@ function updateLeaderboards() {
         currentQuorum = currentHeat.quorum;
     }
 
-    // Keep quorums in fixed order: deacon, teacher, priest
+    // Calculate who would advance to championship (top 8)
+    const advancingIds = new Set();
+
+    // Get top 2 from each quorum
     const quorums = ['deacon', 'teacher', 'priest'];
+    quorums.forEach(quorum => {
+        const top2 = state.contestants
+            .filter(c => c.quorum === quorum)
+            .sort((a, b) => b.score - a.score)
+            .slice(0, 2);
+        top2.forEach(c => advancingIds.add(c.id));
+    });
+
+    // Get wild cards (next 2 highest scores not already in finalists)
+    const wildcards = state.contestants
+        .filter(c => !advancingIds.has(c.id))
+        .sort((a, b) => b.score - a.score)
+        .slice(0, 2);
+    wildcards.forEach(c => advancingIds.add(c.id));
 
     // Render leaderboards in fixed order
     leaderboardContainer.innerHTML = quorums.map(quorum => {
@@ -529,23 +548,25 @@ function updateLeaderboards() {
             .sort((a, b) => b.score - a.score);
 
         const isCurrentlyRacing = quorum === currentQuorum;
-        const highlightClass = isCurrentlyRacing ? ' current-racing' : '';
 
         let content;
         if (quorumContestants.length === 0) {
             content = '<div class="leaderboard-empty">No racers in this quorum</div>';
         } else {
-            content = quorumContestants.map((c, index) => `
-                <div class="leaderboard-row ${c.quorum}">
-                    <div class="leaderboard-rank">#${index + 1}</div>
-                    <div class="leaderboard-name">${c.name}</div>
-                    <div class="leaderboard-score">${c.score} pts</div>
-                </div>
-            `).join('');
+            content = quorumContestants.map((c, index) => {
+                const advancingClass = advancingIds.has(c.id) ? ' advancing' : '';
+                return `
+                    <div class="leaderboard-row ${c.quorum}${advancingClass}">
+                        <div class="leaderboard-rank">#${index + 1}</div>
+                        <div class="leaderboard-name">${c.name}</div>
+                        <div class="leaderboard-score">${c.score} pts</div>
+                    </div>
+                `;
+            }).join('');
         }
 
         return `
-            <div class="quorum-leaderboard${highlightClass}">
+            <div class="quorum-leaderboard">
                 <h3>
                     ${capitalizeFirst(quorum)} Quorum
                     <span class="racing-badge${isCurrentlyRacing ? '' : ' hidden'}">RACING NOW</span>
