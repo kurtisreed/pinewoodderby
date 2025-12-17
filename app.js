@@ -246,15 +246,7 @@ function generateHeats() {
 
     state.currentHeatIndex = 0;
 
-    // Console log all heats for debugging
-    console.log('=== TOTAL HEATS GENERATED:', state.heats.length, '===');
-    state.heats.forEach((heat, index) => {
-        console.log(`Heat ${index + 1} (${capitalizeFirst(heat.quorum)} Quorum - Heat ${heat.heatNumber}):`);
-        console.log(`  Track 1: ${heat.slots[1].name}`);
-        console.log(`  Track 2: ${heat.slots[2].name}`);
-        console.log(`  Track 3: ${heat.slots[3].name}`);
-    });
-    console.log('================================');
+
 
     renderCurrentRace();
     renderUpcomingHeats();
@@ -649,7 +641,7 @@ function updateLeaderboards() {
                 ${wildCardContent}
             </div>
             <div style="margin-top: 10px; padding: 10px; background: #f8f9fa; border-radius: 8px; font-size: 0.85rem; color: #666; text-align: center;">
-                Ties broken by:<br> # of 1st place finishes<br> # of 2nd place finishes
+                Wild card chosen by:<br>1. Total points<br>2. # of 1st place finishes<br>3. # of 2nd place finishes
             </div>
         </div>
     `;
