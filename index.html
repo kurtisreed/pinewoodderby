@@ -1,0 +1,109 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>K1 Pinewood Derby Scoreboard</title>
+    <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+    <div class="container">
+        <header>
+            <h1>K1 Pinewood Derby Championship</h1>
+            <div class="tabs">
+                <button class="tab-btn active" onclick="switchTab('scoreboard')">Scoreboard</button>
+                <button class="tab-btn" onclick="switchTab('setup')">Setup</button>
+                <button class="tab-btn" id="championshipTab" onclick="switchTab('championship')" style="display: none;">Championship</button>
+            </div>
+        </header>
+
+        <!-- Scoreboard Tab -->
+        <div id="scoreboardTab" class="tab-content active">
+            <div class="main-content">
+                <!-- Left Side: Heat Sheet -->
+                <div class="left-panel">
+                    <div class="heat-section">
+                        <h2>Current Race</h2>
+                        <div id="currentRace" class="current-race">
+                            <p class="no-race">No race in progress. Add contestants to begin.</p>
+                        </div>
+                    </div>
+
+                    <div class="upcoming-section">
+                        <h2>Upcoming Heats</h2>
+                        <div id="upcomingHeats" class="upcoming-heats">
+                            <p class="no-heats">No upcoming heats.</p>
+                        </div>
+                    </div>
+
+                    <div id="startChampionshipSection" style="text-align: center; margin-top: 20px;">
+                        <button id="startChampionshipBtn" class="generate-btn" style="background: linear-gradient(135deg, #ffd700 0%, #ffaa00 100%); width: 100%;">
+                            Start Championship Bracket
+                        </button>
+                    </div>
+                </div>
+
+                <!-- Right Side: Leaderboard -->
+                <div class="right-panel">
+                    <h2>Leaderboard</h2>
+                    <div id="leaderboardContainer"></div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Setup Tab -->
+        <div id="setupTab" class="tab-content">
+            <div class="setup-container">
+                <div class="contestant-entry">
+                    <h2>Add Contestant</h2>
+                    <form id="contestantForm">
+                        <input type="text" id="contestantName" placeholder="Racer Name" required>
+                        <select id="contestantQuorum" required>
+                            <option value="">Select Quorum</option>
+                            <option value="deacon">Deacon</option>
+                            <option value="teacher">Teacher</option>
+                            <option value="priest">Priest</option>
+                        </select>
+                        <button type="submit">Add Racer</button>
+                    </form>
+                    <button id="loadTestData" class="generate-btn" style="background: linear-gradient(135deg, #f093fb 0%, #f5576c 100%); margin-bottom: 10px;">Load Test Data</button>
+                    <button id="generateHeats" class="generate-btn" style="margin-bottom: 10px;">Generate Heats</button>
+                    <button id="clearAllData" class="generate-btn" style="background: linear-gradient(135deg, #ff6b6b 0%, #c92a2a 100%);">Clear All Data</button>
+                </div>
+
+                <div class="contestants-list">
+                    <h3>Registered Racers</h3>
+                    <div id="contestantsList"></div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Championship Tab -->
+        <div id="championshipTabContent" class="tab-content">
+            <div class="championship-container">
+                <h2 style="text-align: center; color: white; margin-bottom: 30px;">Championship Bracket</h2>
+                <div class="bracket-container">
+                    <div class="bracket-round">
+                        <h3>Quarterfinals</h3>
+                        <div class="bracket-matchups" id="quarterfinals"></div>
+                    </div>
+                    <div class="bracket-round">
+                        <h3>Semifinals</h3>
+                        <div class="bracket-matchups" id="semifinals"></div>
+                    </div>
+                    <div class="bracket-round">
+                        <h3>Finals</h3>
+                        <div class="bracket-matchups" id="finals"></div>
+                    </div>
+                    <div class="bracket-round">
+                        <h3>Champion</h3>
+                        <div class="bracket-matchups" id="champion"></div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script src="app.js"></script>
+</body>
+</html>
