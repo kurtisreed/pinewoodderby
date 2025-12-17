@@ -100,7 +100,6 @@ function clearAllData() {
         updateLeaderboards();
         document.getElementById('championshipTab').style.display = 'none';
 
-        alert('All data cleared!');
     }
 }
 
