@@ -489,7 +489,7 @@ function recordResults(first, second, third) {
 
 // Render Upcoming Heats
 function renderUpcomingHeats() {
-    const upcoming = state.heats.slice(state.currentHeatIndex + 1, state.currentHeatIndex + 6);
+    const upcoming = state.heats.slice(state.currentHeatIndex + 1);
 
     if (upcoming.length === 0) {
         upcomingHeatsDiv.innerHTML = '<p class="no-heats">No more heats.</p>';
